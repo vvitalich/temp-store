@@ -1,16 +1,16 @@
-// components/Navbar.vue
 <template>
   <nav class="navbar">
     <div class="logo">🚍 My Trips</div>
     <ul class="nav-links">
       <li><router-link to="/">Главная</router-link></li>
-      <li><router-link to="/passenger">Кабинет пассажира</router-link></li>
-      <li><router-link to="/dispatcher">Кабинет диспетчера</router-link></li>
+      <li v-if="userProfile && userProfile.passenger"><router-link to="/passenger">Кабинет пассажира</router-link></li>
+      <li v-if="userProfile && !userProfile.passenger && !userProfile.user.is_superuser"><router-link to="/dispatcher">Кабинет диспетчера</router-link></li>
+      <li v-if="userProfile && userProfile.user.is_superuser"><router-link to="/administrator">Кабинет администратора</router-link></li>
     </ul>
 
     <div class="auth-buttons">
-      <div v-if="userRef">
-        <span class="user-info">Привет, {{ userRef.user.username }}</span>
+      <div v-if="userProfile">
+        <span class="user-info">Привет, {{ userProfile.user.username }}</span>
         <button @click="logout" class="auth-button">Выход</button>
       </div>
       <div v-else>
@@ -28,22 +28,34 @@ import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
 const authStore = useAuthStore();
-
-const userRef = ref(null);
+const userProfile = ref(null);
 
 watchEffect(() => {
-  userRef.value = authStore.user;
-  console.log("Обновление Navbar:", userRef.value);
+  userProfile.value = authStore.user;
+  console.log("Обновление Navbar:", userProfile.value);
 });
 
-onBeforeMount(async () => {
+const handleNavigation = async () => {
   await authStore.fetchUser();
+  if (userProfile.value) {
+    if (userProfile.value.passenger) {
+      router.push("/passenger");
+    } else if (userProfile.value.user.is_superuser) {
+      router.push("/administrator");
+    } else {
+      router.push("/dispatcher");
+    }
+  }
+};
+
+onBeforeMount(() => {
+  handleNavigation();
 });
 
 const logout = async () => {
   await authStore.logout();
-  userRef.value = null;
-  router.go(0);
+  userProfile.value = null;
+  router.push("/");
 };
 
 const goToLogin = () => {
@@ -54,7 +66,6 @@ const goToRegister = () => {
   router.push("/register");
 };
 </script>
-
 
 <style scoped>
 .navbar {

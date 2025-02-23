@@ -10,9 +10,8 @@ import MovementPage from "../views/MovementPage.vue";
 import StatisticsPage from "../views/StatisticsPage.vue";
 import RoutesPage from "../views/RoutesPage.vue";
 import TripsPage from "../views/TripsPage.vue";
-//import RegisterPage from "../views/RegisterPage.vue";
 import LoginForm from "../components/LoginForm.vue";
-import RegisterForm from "../components/RegisterForm.vue"
+import RegisterForm from "../components/RegisterForm.vue";
 
 const routes = [
   { path: "/", component: HomePage },
@@ -20,25 +19,29 @@ const routes = [
   { path: "/booking", component: BookingPage },
   { path: "/login", component: LoginForm },
   { path: "/register", component: RegisterForm },
-  { path: "/administrator", component: AdminDashboard,
+  { 
+    path: "/administrator", 
+    component: AdminDashboard,
     children: [
-      { path: 'transport', component: TransportPage },
-      { path: 'personnel', component: PersonnelPage },
-      { path: 'movement', component: MovementPage},
-      { path: 'trips', component: TripsPage},
-      { path: 'routes', component: RoutesPage },
-      { path: 'statistics', component: StatisticsPage },
-    ]
+      { path: "transport", component: TransportPage },
+      { path: "personnel", component: PersonnelPage },
+      { path: "movement", component: MovementPage },
+      { path: "trips", component: TripsPage },
+      { path: "routes", component: RoutesPage },
+      { path: "statistics", component: StatisticsPage },
+    ],
   },
-  { path: "/dispatcher", component: DispatcherDashboard,
+  { 
+    path: "/dispatcher", 
+    component: DispatcherDashboard,
     children: [
-      { path: 'transport', component: TransportPage },
-      { path: 'personnel', component: PersonnelPage },
-      { path: 'movement', component: MovementPage},
-      { path: 'trips', component: TripsPage},
-      { path: 'routes', component: RoutesPage },
-      { path: 'statistics', component: StatisticsPage },
-    ]
+      { path: "transport", component: TransportPage },
+      { path: "personnel", component: PersonnelPage },
+      { path: "movement", component: MovementPage },
+      { path: "trips", component: TripsPage },
+      { path: "routes", component: RoutesPage },
+      { path: "statistics", component: StatisticsPage },
+    ],
   },
 ];
 
@@ -48,5 +51,3 @@ const router = createRouter({
 });
 
 export default router;
-
-

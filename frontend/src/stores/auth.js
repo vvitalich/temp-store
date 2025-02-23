@@ -1,6 +1,6 @@
-// stores/auth.js
 import { defineStore } from "pinia";
 import axios from "axios";
+import { useRouter } from "vue-router";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -9,6 +9,7 @@ export const useAuthStore = defineStore("auth", {
   }),
   actions: {
     async login(username, password) {
+      const router = useRouter();
       try {
         const response = await axios.post("http://localhost:8000/api/token/", {
           username,
@@ -17,7 +18,7 @@ export const useAuthStore = defineStore("auth", {
         this.token = response.data.access;
         localStorage.setItem("token", response.data.access);
         await this.fetchUser();
-        this.$router.push("/");
+        router.push("/");
       } catch (error) {
         console.error("Ошибка авторизации:", error);
       }
