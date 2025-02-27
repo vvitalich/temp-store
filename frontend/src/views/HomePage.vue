@@ -5,18 +5,9 @@
       <li v-for="trip in trips" :key="trip.id" class="trip-item">
         <span class="route">{{ trip.route_name }}</span>
         <span class="date">{{ formatDate(trip.departure_time) }}</span>
-        <router-link
-          :to="{
-            path: '/booking',
-            query: {
-              route: trip.route_name,
-              date: trip.departure_time,
-            },
-          }"
-          class="book-button"
-        >
+        <button @click="handleBooking(trip)" class="book-button">
           Забронировать
-        </router-link>
+        </button>
       </li>
     </ul>
   </div>
@@ -24,9 +15,13 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
+import { useAuthStore } from "@/stores/auth"; // Убедитесь, что вы импортировали ваш authStore
 
 const trips = ref([]);
+const router = useRouter();
+const authStore = useAuthStore();
 
 const fetchTrips = async () => {
   try {
@@ -40,6 +35,21 @@ const fetchTrips = async () => {
 const formatDate = (dateString) => {
   const options = { year: "numeric", month: "long", day: "numeric" };
   return new Date(dateString).toLocaleDateString("ru-RU", options);
+};
+
+const handleBooking = (trip) => {
+  if (authStore.user) {
+    router.push({
+      path: '/booking',
+      query: {
+        route: trip.route_name,
+        date: trip.departure_time,
+        trip_id: trip.id
+      },
+    });
+  } else {
+    router.push('/login');
+  }
 };
 
 onMounted(fetchTrips);
@@ -84,8 +94,9 @@ onMounted(fetchTrips);
   padding: 6px 10px;
   background: #3498db;
   color: white;
-  text-decoration: none;
+  border: none;
   border-radius: 5px;
+  cursor: pointer;
   text-align: center;
 }
 

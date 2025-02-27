@@ -36,34 +36,34 @@ watchEffect(() => {
 });
 
 const handleNavigation = async () => {
-  await authStore.fetchUser();
   if (userProfile.value) {
     if (userProfile.value.passenger) {
-      router.push("/passenger");
+      await router.push('/passenger');
     } else if (userProfile.value.user.is_superuser) {
-      router.push("/administrator");
+      await router.push('/administrator');
     } else {
-      router.push("/dispatcher");
+      await router.push('/dispatcher');
     }
   }
 };
 
-onBeforeMount(() => {
-  handleNavigation();
+onBeforeMount(async () => {
+  await authStore.fetchUser();
+  await handleNavigation();
 });
 
 const logout = async () => {
   await authStore.logout();
   userProfile.value = null;
-  router.push("/");
+  await router.push('/');
 };
 
 const goToLogin = () => {
-  router.push("/login");
+  router.push('/login');
 };
 
 const goToRegister = () => {
-  router.push("/register");
+  router.push('/register');
 };
 </script>
 

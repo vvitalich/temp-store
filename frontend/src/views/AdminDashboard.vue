@@ -2,11 +2,11 @@
     <div class="dispatcher-dashboard">
       <nav class="menu">
         <ul>
-          <li><router-link to="/dispatcher/trips">Рейсы</router-link></li>
-          <li><router-link to="/dispatcher/movement">Маршруты</router-link></li>
-          <li><router-link to="/dispatcher/personnel">Персонал</router-link></li>
-          <li><router-link to="/dispatcher/transport">Транспорт</router-link></li>
-          <li><router-link to="/dispatcher/statistics">Статистика и финансы</router-link></li>
+          <li><router-link to="/administrator/trips">Рейсы</router-link></li>
+          <li><router-link to="/administrator/movement">Маршруты</router-link></li>
+          <li><router-link to="/administrator/personnel">Персонал</router-link></li>
+          <li><router-link to="/administrator/transport">Транспорт</router-link></li>
+          <li><router-link to="/administrator/statistics">Статистика и финансы</router-link></li>
   
         </ul>
       </nav>

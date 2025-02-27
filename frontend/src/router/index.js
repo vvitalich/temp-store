@@ -12,10 +12,12 @@ import RoutesPage from "../views/RoutesPage.vue";
 import TripsPage from "../views/TripsPage.vue";
 import LoginForm from "../components/LoginForm.vue";
 import RegisterForm from "../components/RegisterForm.vue";
+import BookingForm from "../components/BookingForm.vue";
 
 const routes = [
   { path: "/", component: HomePage },
   { path: "/passenger", component: PassengerDashboard },
+  { path: "/bookingform", component: BookingForm },
   { path: "/booking", component: BookingPage },
   { path: "/login", component: LoginForm },
   { path: "/register", component: RegisterForm },

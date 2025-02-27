@@ -1,41 +1,94 @@
 <template>
   <div class="routes-page">
-    <!-- Левая колонка - список рейсов -->
-    <div class="trips-list">
-      <h2>Список рейсов</h2>
+    <!-- Левая колонка - список маршрутов -->
+    <div class="routes-list">
+      <h2>Список маршрутов</h2>
       <ul>
-        <li v-for="trip in trips" :key="trip.id" class="trip-item">
-          <span class="dates">{{ trip.startDate }} - {{ trip.endDate }}</span>
-          <span class="route">{{ trip.routeName }}</span>
-          <span class="driver">{{ trip.leadDriver }}</span>
-          <span class="status" :class="trip.statusClass">{{ trip.status }}</span>
+        <li v-for="route in routes" :key="route.id" class="route-item">
+          <span class="route-name">{{ route.name }}</span>
+          <span class="enterprise">{{ route.enterprise_name }}</span>
         </li>
       </ul>
     </div>
 
     <!-- Правая колонка - кнопки управления -->
     <div class="actions">
-      <button class="routes-button" @click="goToRoutes">Маршруты</button>
-      <button class="add-trip-button">Добавить рейс</button>
+      <button class="add-route-button" @click="addRoute">Добавить маршрут</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch } from 'vue';
+import api from "@/api";
+import { useAuthStore } from "@/stores/auth";
 
-const router = useRouter();
+const routes = ref([]);
+const enterpriseId = ref(null);
+const authStore = useAuthStore();
+const isAdmin = ref(false);
 
-const trips = ref([
-  { id: 1, startDate: "10.02.2025", endDate: "12.02.2025", routeName: "Киев - Львов", leadDriver: "Иванов И.И.", status: "Запланирован", statusClass: "planned" },
-  { id: 2, startDate: "11.02.2025", endDate: "13.02.2025", routeName: "Одесса - Харьков", leadDriver: "Петров П.П.", status: "В пути", statusClass: "in-progress" },
-  { id: 3, startDate: "09.02.2025", endDate: "10.02.2025", routeName: "Днепр - Киев", leadDriver: "Сидоров С.С.", status: "Завершен", statusClass: "completed" },
-]);
+// Функция для получения роли пользователя
+function checkIfAdmin() {
+  isAdmin.value = authStore.user?.user?.is_superuser || false;
+}
 
-const goToRoutes = () => {
-  router.push('routes');
-};
+// Функция для получения ID предприятия пользователя
+async function fetchEnterpriseId() {
+  try {
+    console.log("Fetching enterprise memberships...");
+    const response = await api.get("/profiles/enterprise-memberships/");
+    
+    if (response.data.length === 0) {
+      console.error("User has no enterprise memberships!");
+      return;
+    }
+
+    const enterprise = response.data[0].enterprise;
+    if (!enterprise || !enterprise.id) {
+      console.error("ID предприятия не найден в объекте!");
+      return;
+    }
+
+    enterpriseId.value = Number(enterprise.id);
+    console.log("Enterprise ID после преобразования:", enterpriseId.value);
+  } catch (error) {
+    console.error("Ошибка при получении ID предприятия:", error);
+  }
+}
+
+// Функция для получения маршрутов
+async function fetchRoutes() {
+  try {
+    const response = await api.get("/crm/routes/");
+
+    if (isAdmin.value) {
+      // Администратор видит все маршруты
+      routes.value = response.data;
+    } else {
+      // Перевозчик видит маршруты своего предприятия
+      if (!enterpriseId.value || isNaN(enterpriseId.value)) {
+        console.error("Enterprise ID не установлен или некорректен!");
+        return;
+      }
+
+      routes.value = response.data
+        .filter(route => Number(route.enterprise) === enterpriseId.value);
+    }
+
+    console.log("Отфильтрованные маршруты:", routes.value);
+  } catch (error) {
+    console.error("Ошибка загрузки маршрутов:", error);
+  }
+}
+
+onMounted(async () => {
+  checkIfAdmin();
+  if (!isAdmin.value) {
+    await fetchEnterpriseId();
+  }
+  await fetchRoutes();
+});
 </script>
 
 <style scoped>
@@ -48,21 +101,21 @@ const goToRoutes = () => {
 }
 
 /* Левая колонка */
-.trips-list {
+.routes-list {
   flex: 3;
 }
 
-.trips-list h2 {
+.routes-list h2 {
   text-align: left;
   margin-bottom: 10px;
 }
 
-.trips-list ul {
+.routes-list ul {
   list-style: none;
   padding: 0;
 }
 
-.trip-item {
+.route-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -72,37 +125,15 @@ const goToRoutes = () => {
   margin-bottom: 8px;
 }
 
-.dates {
-  flex: 2;
-  text-align: left;
-}
-
-.route {
+.route-name {
   flex: 3;
   text-align: left;
 }
 
-.driver {
+.enterprise {
   flex: 2;
   text-align: left;
-}
-
-.status {
-  flex: 1;
-  text-align: center;
-  font-weight: bold;
-}
-
-.planned {
-  color: blue;
-}
-
-.in-progress {
-  color: orange;
-}
-
-.completed {
-  color: green;
+  font-style: italic;
 }
 
 /* Правая колонка */
@@ -113,9 +144,8 @@ const goToRoutes = () => {
   gap: 10px;
 }
 
-.routes-button,
-.add-trip-button {
-  background: #007bff;
+.add-route-button {
+  background: #28a745;
   color: white;
   border: none;
   padding: 10px;
@@ -124,15 +154,7 @@ const goToRoutes = () => {
   font-size: 16px;
 }
 
-.add-trip-button {
-  background: #28a745;
-}
-
-.routes-button:hover {
-  background: #0056b3;
-}
-
-.add-trip-button:hover {
+.add-route-button:hover {
   background: #218838;
 }
 </style>
