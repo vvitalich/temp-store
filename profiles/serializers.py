@@ -54,15 +54,3 @@ class PhoneNumberSerializer(serializers.ModelSerializer):
         fields = ['user', 'enterprise', 'number', 'messenger']
 
 
- # {
- #        "id": 13,
- #        "user": {
- #            "id": 16,
- #            "username": "dmitii",
- #            "email": "dmitrii@mail.ru",
- #            "first_name": "Dmitrii",
- #            "last_name": "Dmitrich"
- #        },
- #        "passenger": false,
- #        "image": "http://127.0.0.1:8000/png-transparent-telegram-hd-logo-thumbnail_lL2zDSz.png"
- #    }

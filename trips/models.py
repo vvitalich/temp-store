@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from crm.models import Trip
 User = get_user_model()
 
 
@@ -14,10 +14,11 @@ class Reservation(models.Model):
     passenger = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations')
 
     # Идентификатор рейса из CRM, к которому привязано бронирование
-    crm_trip_id = models.CharField(
-        max_length=255,
-        help_text="Идентификатор рейса, полученный из приложения CRM"
-    )
+    # crm_trip_id = models.CharField(
+    #     max_length=255,
+    #     help_text="Идентификатор рейса, полученный из приложения CRM"
+
+    crm_trip_id = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='trips')
 
     # Количество забронированных мест (поддержка групповых бронирований)
     seat_count = models.PositiveIntegerField(default=1)
