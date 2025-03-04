@@ -1,4 +1,3 @@
-// PassengerDashboard.vue - Кабинет пассажира
 <template>
   <div class="passenger-dashboard">
     <h1>Ваши бронирования</h1>
@@ -15,8 +14,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import api from '@/api'; // Импортируем ваш API модуль
-import { format } from 'date-fns';
+import api from '@/api';
+import { format, isValid } from 'date-fns';
 
 const bookings = ref([]);
 const loading = ref(false);
@@ -26,19 +25,27 @@ const fetchBookings = async () => {
   loading.value = true;
   error.value = '';
   try {
-    const response = await api.get('/trips/reservations/'); // Запрос списка бронирований
-    const tripIds = response.data.map(booking => booking.crm_trip_id);
-    const tripsResponse = await api.get(`/trips/?ids=${tripIds.join(',')}`); // Запрос данных о рейсах
-    const tripsData = tripsResponse.data;
+    const response = await api.get('/trips/reservations/');
+    console.log('Reservations:', response.data);
+    
+    const tripIds = [...new Set(response.data.map(booking => booking.crm_trip_id))]; // Убираем дубликаты
+    if (tripIds.length === 0) {
+      bookings.value = response.data;
+      return;
+    }
 
-    // Объединяем данные бронирований с данными рейсов
+    const tripsResponse = await api.get(`/crm/trips/?ids=${tripIds.join(',')}`);
+    console.log('Trips:', tripsResponse.data);
+    
+    const tripsData = Array.isArray(tripsResponse.data) ? tripsResponse.data : [];
+    
     bookings.value = response.data.map(booking => {
       const trip = tripsData.find(trip => trip.id === booking.crm_trip_id);
       return {
         ...booking,
-        route_name: trip.route_name,
-        departure_time: trip.departure_time,
-        cancelable: booking.status === 'reserved' // Делаем кнопку отмены доступной только если статус 'reserved'
+        route_name: trip ? trip.route_name : 'Маршрут не найден',
+        departure_time: trip ? trip.departure_time : null,
+        cancelable: booking.status === 'reserved'
       };
     });
   } catch (err) {
@@ -51,7 +58,7 @@ const fetchBookings = async () => {
 
 const cancelBooking = async (id) => {
   try {
-    await api.delete(`/trips/reservations/${id}/`); // Запрос на отмену бронирования
+    await api.delete(`/trips/reservations/${id}/`);
     bookings.value = bookings.value.filter(booking => booking.id !== id);
   } catch (err) {
     error.value = 'Ошибка при отмене бронирования.';
@@ -60,7 +67,9 @@ const cancelBooking = async (id) => {
 };
 
 const formatDate = (dateString) => {
-  return dateString ? format(new Date(dateString), 'dd.MM.yyyy HH:mm') : 'Неизвестная дата';
+  if (!dateString) return 'Дата неизвестна';
+  const date = new Date(dateString);
+  return isValid(date) ? format(date, 'dd.MM.yyyy HH:mm') : 'Некорректная дата';
 };
 
 onMounted(fetchBookings);

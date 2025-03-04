@@ -8,14 +8,15 @@ import { format } from 'date-fns';
 const route = useRoute();
 const authStore = useAuthStore();
 
-// Получаем объект рейса из query-параметров
 const trip = ref({});
 const tripId = ref(null);
+const availableSeats = ref(0);  // Добавляем переменную для отслеживания доступных мест
 
 watchEffect(() => {
   try {
     trip.value = route.query.trip ? JSON.parse(route.query.trip) : {};
     tripId.value = trip.value.id ? Number(trip.value.id) : (route.query.trip_id ? Number(route.query.trip_id) : null);
+    availableSeats.value = trip.value.passengers_capacity || 0;  // Устанавливаем начальное значение доступных мест
   } catch (e) {
     console.error('Ошибка парсинга trip:', e);
     trip.value = {};
@@ -52,9 +53,14 @@ const submitBooking = async () => {
     return;
   }
 
+  if (seats.value > availableSeats.value) {
+    alert('Недостаточно доступных мест.');
+    return;
+  }
+
   const bookingData = {
     passenger: authStore.user?.user?.id,
-    crm_trip_id: tripId.value, // Передаем ID, а не объект
+    crm_trip_id: tripId.value,  // Передаем ID, а не объект
     seat_count: seats.value,
     booking_date: new Date().toISOString(),
     status: 'reserved',
@@ -67,6 +73,7 @@ const submitBooking = async () => {
   try {
     await api.post('/trips/reservations/', bookingData);
     alert('Бронирование подтверждено!');
+    availableSeats.value -= seats.value;  // Уменьшаем количество доступных мест
   } catch (error) {
     console.error('Ошибка бронирования:', error);
     alert('Ошибка бронирования. Попробуйте снова.');
@@ -86,6 +93,7 @@ const formatDate = (dateString) => {
     <p><strong>Статус:</strong> {{ tripStatus }}</p>
     <p><strong>Дата отправления:</strong> {{ formatDate(departureTime) }}</p>
     <p><strong>Дата прибытия:</strong> {{ formatDate(arrivalTime) }}</p>
+    <p><strong>Доступные места:</strong> {{ availableSeats }}</p>
     
     <form @submit.prevent="submitBooking">
       <label>ФИО: <input :value="name" disabled /></label>
