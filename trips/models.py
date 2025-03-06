@@ -14,10 +14,6 @@ class Reservation(models.Model):
     passenger = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations')
 
     # Идентификатор рейса из CRM, к которому привязано бронирование
-    # crm_trip_id = models.CharField(
-    #     max_length=255,
-    #     help_text="Идентификатор рейса, полученный из приложения CRM"
-
     crm_trip_id = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='trips')
 
     # Количество забронированных мест (поддержка групповых бронирований)
@@ -36,6 +32,7 @@ class Reservation(models.Model):
         null=True,
         help_text="Опционально: выбор багажа (например, маленький, средний, большой)"
     )
+
 
     def __str__(self):
         return f"{self.passenger.username} - Рейс {self.crm_trip_id} - Мест: {self.seat_count}"

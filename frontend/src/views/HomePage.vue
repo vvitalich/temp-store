@@ -45,7 +45,8 @@ const handleBooking = (trip) => {
         route: trip.route_name,
         date: trip.departure_time,
         trip_id: trip.id,
-        passengers_capacity: trip.passengers_capacity
+        passengers_capacity: trip.passengers_capacity,
+        trip: JSON.stringify(trip),
       },
     });
   } else {

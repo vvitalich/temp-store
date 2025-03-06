@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Route, Trip, DriverWorkLog
+from profiles.models import Car
 
 class RouteSerializer(serializers.ModelSerializer):
     enterprise_name = serializers.CharField(source="enterprise.name", read_only=True)
@@ -34,7 +35,7 @@ class TripSerializer(serializers.ModelSerializer):
     route_id = serializers.CharField(source="route.id", read_only=True)
     route_name = serializers.CharField(source="route.name", read_only=True)
     enterprise = serializers.CharField(source="route.enterprise", read_only=True)
-
+    passengers_capacity = serializers.CharField(source="car.passengers_capacity", read_only=True)
 
     class Meta:
         model = Trip
@@ -45,5 +46,6 @@ class TripSerializer(serializers.ModelSerializer):
             "enterprise",
             "departure_time",
             "arrival_time",
+            "passengers_capacity",
             "status"
         ]

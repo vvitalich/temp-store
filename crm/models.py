@@ -30,6 +30,13 @@ class Trip(models.Model):
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    free_places = models.PositiveIntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        # Получаем значение passengers_capacity из связанной модели Car
+        if self.car:
+            self.free_places = self.car.passengers_capacity
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.route.name} - {self.departure_time}"
